@@ -4,6 +4,7 @@ import './styles/dashboard.css'
 import Sidebar from './components/Sidebar'
 import DashboardHome from './components/DashboardHome'
 import AlinityModule from './components/AlinityModule'
+import InOutModule from './components/InOutModule'
 import { modules } from './data/modules'
 
 function App() {
@@ -18,10 +19,14 @@ function App() {
   return (
     <div className="layout">
       <Sidebar />
-      {currentView === 'home' ? (
+      {currentView === 'home' && (
         <DashboardHome modules={modules} onModuleSelect={handleModuleSelect} />
-      ) : (
-        <AlinityModule onBack={() => setCurrentView('home')} />
+      )}
+      {currentView === 'alinity' && (
+        <AlinityModule onBack={() => setCurrentView('home')} onOpenInOut={() => setCurrentView('inout')} />
+      )}
+      {currentView === 'inout' && (
+        <InOutModule onBack={() => setCurrentView('alinity')} />
       )}
     </div>
   )

@@ -1,12 +1,12 @@
 const alinityOptions = [
-  { name: 'IN-OUT', emoji: '📦' },
-  { name: 'REACTIVOS', emoji: '🧪' },
-  { name: 'CONTROLES', emoji: '🗂️' },
-  { name: 'CALIBRADORES', emoji: '🧫' },
-  { name: 'OnBoard', emoji: '🏷️' },
+  { name: 'IN-OUT', emoji: '📦', key: 'inout' },
+  { name: 'REACTIVOS', emoji: '🧪', key: 'reactivos' },
+  { name: 'CONTROLES', emoji: '🗂️', key: 'controles' },
+  { name: 'CALIBRADORES', emoji: '🧫', key: 'calibradores' },
+  { name: 'OnBoard', emoji: '🏷️', key: 'onboard' },
 ]
 
-function AlinityModule({ onBack }) {
+function AlinityModule({ onBack, onOpenInOut }) {
   return (
     <main className="content">
       <header className="topbar">
@@ -17,7 +17,13 @@ function AlinityModule({ onBack }) {
 
       <section className="alinity-grid" aria-label="Opciones Alinity">
         {alinityOptions.map((item) => (
-          <article key={item.name} className="alinity-card" role="button" tabIndex={0}>
+          <article
+            key={item.name}
+            className="alinity-card"
+            role="button"
+            tabIndex={0}
+            onClick={() => item.key === 'inout' && onOpenInOut()}
+          >
             <div className="alinity-media">{item.emoji}</div>
             <p>{item.name}</p>
           </article>
