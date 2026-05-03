@@ -6,7 +6,7 @@ const alinityOptions = [
   { name: 'OnBoard', emoji: '🏷️', key: 'onboard' },
 ]
 
-function AlinityModule({ onBack, onOpenInOut }) {
+function AlinityModule({ onBack, onOpen }) {
   return (
     <main className="content">
       <header className="topbar">
@@ -17,13 +17,7 @@ function AlinityModule({ onBack, onOpenInOut }) {
 
       <section className="alinity-grid" aria-label="Opciones Alinity">
         {alinityOptions.map((item) => (
-          <article
-            key={item.name}
-            className="alinity-card"
-            role="button"
-            tabIndex={0}
-            onClick={() => item.key === 'inout' && onOpenInOut()}
-          >
+          <article key={item.name} className="alinity-card" role="button" tabIndex={0} onClick={() => onOpen(item.key)}>
             <div className="alinity-media">{item.emoji}</div>
             <p>{item.name}</p>
           </article>

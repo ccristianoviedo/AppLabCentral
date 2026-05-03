@@ -207,3 +207,10 @@ h2 { margin: 0; font-size: 28px; color: var(--c-ink); }
 .movements table { width:100%; border-collapse:collapse; font-size:13px; }
 .movements th, .movements td { border-bottom:1px solid var(--c-border); text-align:left; padding:8px 6px; }
 @media (max-width: 1100px) { .inout-wrap { grid-template-columns: 1fr; } }
+
+
+.sheet-wrap { margin:22px; background:#fff; border:1px solid var(--c-border); border-radius:10px; padding:12px; overflow:auto; }
+.sheet-source { margin:0 0 10px; font-size:12px; color:#5c7278; }
+.sheet-error { color:#b42318; font-size:13px; }
+.sheet-table { width:100%; border-collapse:collapse; font-size:13px; }
+.sheet-table th, .sheet-table td { border-bottom:1px solid var(--c-border); text-align:left; padding:8px 6px; white-space:nowrap; }
