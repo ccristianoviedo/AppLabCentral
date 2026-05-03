@@ -1,29 +1,36 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const SHEET_ID = '17bsID3RXNAwHtDJWWDHELh9M4FP-EsmVNj97itfuEcA'
-
-function csvToRows(csvText) {
-  const lines = csvText.trim().split('\n')
-  return lines.map((line) => line.split(',').map((cell) => cell.replace(/^"|"$/g, '').trim()))
-}
+const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || ''
 
 function SheetTableView({ title, sheetName, onBack }) {
   const [rows, setRows] = useState([])
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`
+    if (!APPS_SCRIPT_URL) {
+      setError('Falta configurar VITE_APPS_SCRIPT_URL para consumir Google Sheets vía Apps Script.')
+      setLoading(false)
+      return
+    }
+
+    const url = `${APPS_SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`
+    setLoading(true)
     fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error('No se pudo leer la hoja')
-        return r.text()
+        return r.json()
       })
-      .then((csv) => setRows(csvToRows(csv)))
-      .catch(() => setError('No se pudo cargar la hoja. Verificá permisos de publicación en Google Sheets.'))
+      .then((json) => {
+        if (!Array.isArray(json.rows)) throw new Error('Respuesta inválida del Apps Script')
+        setRows(json.rows)
+        setError('')
+      })
+      .catch(() => setError('No se pudo cargar la hoja desde Apps Script. Verificá despliegue y permisos.'))
+      .finally(() => setLoading(false))
   }, [sheetName])
 
-  const headers = useMemo(() => (rows.length ? rows[0] : []), [rows])
-  const dataRows = useMemo(() => (rows.length > 1 ? rows.slice(1) : []), [rows])
+  const headers = useMemo(() => (rows.length ? Object.keys(rows[0]) : []), [rows])
 
   return (
     <main className="content">
@@ -34,18 +41,19 @@ function SheetTableView({ title, sheetName, onBack }) {
       </header>
 
       <section className="sheet-wrap">
-        <p className="sheet-source">Hoja: {sheetName} · ID: {SHEET_ID}</p>
-        {error ? (
+        <p className="sheet-source">Origen: Apps Script → Google Sheets | Hoja: {sheetName}</p>
+        {loading && <p className="sheet-source">Cargando...</p>}
+        {!loading && error ? (
           <p className="sheet-error">{error}</p>
         ) : (
           <table className="sheet-table">
             <thead>
-              <tr>{headers.map((h) => <th key={h}>{h || '-'}</th>)}</tr>
+              <tr>{headers.map((h) => <th key={h}>{h}</th>)}</tr>
             </thead>
             <tbody>
-              {dataRows.map((row, idx) => (
+              {rows.map((row, idx) => (
                 <tr key={`${sheetName}-${idx}`}>
-                  {headers.map((_, i) => <td key={i}>{row[i] || '-'}</td>)}
+                  {headers.map((h) => <td key={h}>{row[h] ?? '-'}</td>)}
                 </tr>
               ))}
             </tbody>
