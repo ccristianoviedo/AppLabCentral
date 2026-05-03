@@ -1,6 +1,6 @@
 import ModuleCard from './ModuleCard'
 
-function DashboardHome({ modules }) {
+function DashboardHome({ modules, onModuleSelect }) {
   return (
     <main className="content">
       <header className="topbar">
@@ -10,7 +10,7 @@ function DashboardHome({ modules }) {
 
       <section className="cards-grid" aria-label="Módulos">
         {modules.map((module) => (
-          <ModuleCard key={module.name} module={module} />
+          <ModuleCard key={module.name} module={module} onSelect={onModuleSelect} />
         ))}
       </section>
 

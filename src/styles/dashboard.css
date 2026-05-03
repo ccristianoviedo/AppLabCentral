@@ -155,3 +155,43 @@ h2 { margin: 0; font-size: 28px; color: var(--c-ink); }
 
 .module-card { cursor: pointer; }
 .module-card:hover { border-color: var(--c-accent-dark); transform: translateY(-1px); }
+
+
+.crumb-btn {
+  border: 0;
+  background: transparent;
+  color: var(--c-accent-dark);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.crumb-sep { color: #7b8f95; }
+
+.alinity-grid {
+  margin: 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.alinity-card {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.alinity-media {
+  height: 180px;
+  background: var(--c-bg);
+  display: grid;
+  place-items: center;
+  font-size: 54px;
+}
+
+.alinity-card p {
+  margin: 0;
+  padding: 10px;
+  font-size: 13px;
+  color: #35545b;
+}

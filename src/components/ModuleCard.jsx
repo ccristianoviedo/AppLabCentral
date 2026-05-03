@@ -1,6 +1,17 @@
-function ModuleCard({ module }) {
+function ModuleCard({ module, onSelect }) {
   return (
-    <article className="module-card" role="button" tabIndex={0}>
+    <article
+      className="module-card"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(module)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(module)
+        }
+      }}
+    >
       <div className="card-top">
         <span className="icon" aria-hidden="true">{module.icon}</span>
         <div>
