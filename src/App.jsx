@@ -1,46 +1,71 @@
+import { useMemo, useState } from 'react'
 import './App.css'
 
 const modules = [
-  { name: 'ALINITY', icon: '🧪', detail: 'Analizador químico automatizado' },
-  { name: 'ELISAS', icon: '🧫', detail: 'Panel inmunológico y serología' },
-  { name: 'HIV', icon: '🦠', detail: 'Seguimiento y control VIH' },
-  { name: 'GESTIÓN PENDIENTES', icon: '☁️', detail: 'Resultados y tareas por validar' },
-  { name: 'STOCK Z. FRÍA', icon: '❄️', detail: 'Reactivos y cadena de frío' },
-  { name: 'CC', icon: '🎚️', detail: 'Control de calidad interno' },
-  { name: 'ANOTACIONES', icon: '📝', detail: 'Bitácora y observaciones críticas' },
-  { name: 'PARÁSITO', icon: '🪲', detail: 'Registro parasitológico' },
-  { name: 'SÍFILIS', icon: '🧬', detail: 'Pruebas treponémicas y no treponémicas' },
+  { name: 'ALINITY', section: 'Procesamiento', detail: 'Analizador químico automatizado', icon: '⚗️' },
+  { name: 'ELISAS', section: 'Procesamiento', detail: 'Panel inmunológico y serología', icon: '🧪' },
+  { name: 'HIV', section: 'Serología', detail: 'Seguimiento y control VIH', icon: '🦠' },
+  { name: 'GESTIÓN PENDIENTES', section: 'Gestión', detail: 'Resultados y tareas por validar', icon: '📋' },
+  { name: 'STOCK Z. FRÍA', section: 'Stock', detail: 'Reactivos y cadena de frío', icon: '❄️' },
+  { name: 'CC', section: 'Gestión', detail: 'Control de calidad interno', icon: '📈' },
+  { name: 'ANOTACIONES', section: 'Gestión', detail: 'Bitácora y observaciones críticas', icon: '📝' },
+  { name: 'PARÁSITO', section: 'Serología', detail: 'Registro parasitológico', icon: '🔬' },
+  { name: 'SÍFILIS', section: 'Serología', detail: 'Pruebas treponémicas y no treponémicas', icon: '🧬' },
 ]
 
+const navItems = ['Inicio', 'Serología', 'Procesamiento', 'Gestión', 'Stock', 'Reportes', 'Configuración']
+
 function App() {
+  const [query, setQuery] = useState('')
+
+  const filteredModules = useMemo(() => {
+    const text = query.toLowerCase().trim()
+    if (!text) return modules
+
+    return modules.filter((module) => {
+      return (
+        module.name.toLowerCase().includes(text) ||
+        module.detail.toLowerCase().includes(text) ||
+        module.section.toLowerCase().includes(text)
+      )
+    })
+  }, [query])
+
   return (
-    <div className="app-shell">
-      <aside className="left-rail" aria-label="Navegación principal">
-        <div className="logo-dot">LC</div>
-        <button type="button" className="rail-btn active">⌂</button>
-        <button type="button" className="rail-btn">◫</button>
-        <button type="button" className="rail-btn">⌁</button>
-        <button type="button" className="rail-btn">⚙</button>
+    <div className="layout">
+      <aside className="sidebar" aria-label="Menú principal">
+        <div className="brand">AppLabo<br />Central</div>
+        <nav>
+          {navItems.map((item, idx) => (
+            <button key={item} type="button" className={`menu-item ${idx === 0 ? 'active' : ''}`}>
+              {item}
+            </button>
+          ))}
+        </nav>
       </aside>
 
-      <main className="main-panel">
-        <header className="header-bar">
+      <main className="content">
+        <header className="header">
           <div>
-            <p className="micro">Plataforma científica</p>
-            <h1>AppLabo · Laboratorio Central</h1>
+            <h1>Panel principal</h1>
+            <p>Gestión central del laboratorio</p>
           </div>
-          <div className="status-chip">Online · 9 módulos</div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar módulo..."
+            aria-label="Buscar módulo"
+          />
         </header>
 
-        <section className="module-grid">
-          {modules.map((module) => (
-            <article className="module-card" key={module.name}>
-              <div className="module-top">
-                <span className="module-icon" aria-hidden="true">{module.icon}</span>
-                <span className="module-tag">Activo</span>
-              </div>
+        <section className="cards-grid" aria-label="Módulos">
+          {filteredModules.map((module) => (
+            <article key={module.name} className="module-card">
+              <span className="icon" aria-hidden="true">{module.icon}</span>
               <h2>{module.name}</h2>
+              <small>{module.section}</small>
               <p>{module.detail}</p>
+              <button type="button" className="open-btn">Abrir módulo</button>
             </article>
           ))}
         </section>
