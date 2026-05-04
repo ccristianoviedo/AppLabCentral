@@ -6,7 +6,7 @@ function SheetTableView({ title, sheetName, onBack }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const url = `/api/sheets/${encodeURIComponent(sheetName)}`
+    const url = `/api/stock/resumen/${encodeURIComponent(sheetName)}`
     setLoading(true)
     fetch(url)
       .then((r) => {

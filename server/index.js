@@ -28,6 +28,31 @@ const auth = new google.auth.GoogleAuth({
 })
 const sheets = google.sheets({ version: 'v4', auth })
 
+
+const ALERTS_VTO_DAYS_WARN = Number(process.env.ALERTS_VTO_DAYS_WARN || 45)
+const ALERTS_COVERAGE_DAYS_WARN = Number(process.env.ALERTS_COVERAGE_DAYS_WARN || 10)
+const REACTIVO_QTY_THRESHOLDS = {
+  aghbe: 200, 'anti hbe': 200, 'anti hbs': 400, 'cmv g': 400, 'cmv m': 400,
+  'core m': 200, ebna: 400, 'ebv vca g': 400, 'ebv vca m': 400, 'hbc core': 3600,
+  hbsag: 3600, hiv: 3600, 'rubeola g': 400, sifilis: 3600, 'vha g': 400, 'vha m': 400, vhc: 3000,
+}
+
+function normalizeName(s=''){return String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[-_/]+/g,' ').replace(/\s+/g,' ').trim()}
+function parseDate(value){const d=new Date(value); return Number.isNaN(d.getTime())?null:d}
+function daysLeft(v){const d=parseDate(v); if(!d) return null; const t=new Date(); const a=new Date(t.getFullYear(),t.getMonth(),t.getDate()); const b=new Date(d.getFullYear(),d.getMonth(),d.getDate()); return Math.floor((b-a)/86400000)}
+function buildAlert(row,totalByName){
+  const msgs=[]
+  const d=daysLeft(row['VENCIMIENTO'])
+  if(d!==null){ if(d<=0) msgs.push('⚠️ VENCIDO'); else if(d<=ALERTS_VTO_DAYS_WARN) msgs.push(`VTO ${d} días`) }
+  const stock=Number(row['STOCK ACTUAL']||0)
+  if(stock===0) msgs.push('🟥')
+  const key=normalizeName(row['REACTIVOS']||row['CONTROLES']||row['CALIBRADORES']||'')
+  const thr=REACTIVO_QTY_THRESHOLDS[key]
+  const total=totalByName[key]||0
+  if(typeof thr==='number'){ if(total===0) msgs.push('🟥 SIN STOCK!'); else if(total<=Math.floor(thr/2)) msgs.push('🟥 CRÍTICO'); else if(total<=thr) msgs.push('🟨 PEDIR') }
+  return msgs.join(' | ')
+}
+
 function toObjects(values = []) {
   if (!values.length) return []
   const [headers, ...rows] = values
@@ -82,6 +107,23 @@ app.get('/api/stock/movimientos', async (req, res) => {
     res.json({ rows: all })
   } catch {
     res.status(500).json({ error: 'No se pudo leer movimientos' })
+  }
+})
+
+
+app.get('/api/stock/resumen/:sheetKey', async (req, res) => {
+  try {
+    const sheetName = SHEET_MAP[req.params.sheetKey.toUpperCase()]
+    if (!sheetName) return res.status(400).json({ error: 'Hoja no soportada' })
+    const r = await sheets.spreadsheets.values.get({ spreadsheetId: CFG.summarySheetId, range: `${sheetName}!A1:Z2000` })
+    const rows = toObjects(r.data.values || [])
+    const nameCol = sheetName === 'REACTIVOS' ? 'REACTIVOS' : sheetName
+    const totalByName = {}
+    rows.forEach((row) => { const k = normalizeName(row[nameCol]); totalByName[k] = (totalByName[k] || 0) + Number(row['STOCK ACTUAL'] || 0) })
+    const rowsWithAlerts = rows.map((row) => ({ ...row, ALERTA: buildAlert(row, totalByName) }))
+    res.json({ rows: rowsWithAlerts, meta: { vtoWarnDays: ALERTS_VTO_DAYS_WARN, coverageWarnDays: ALERTS_COVERAGE_DAYS_WARN } })
+  } catch {
+    res.status(500).json({ error: 'Error al generar resumen' })
   }
 })
 
